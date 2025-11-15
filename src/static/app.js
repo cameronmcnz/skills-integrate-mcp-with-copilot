@@ -3,15 +3,30 @@ document.addEventListener("DOMContentLoaded", () => {
   const activitySelect = document.getElementById("activity");
   const signupForm = document.getElementById("signup-form");
   const messageDiv = document.getElementById("message");
+  const searchInput = document.getElementById("search-input");
+  const sortSelect = document.getElementById("sort-select");
 
-  // Function to fetch activities from API
+  // Function to fetch activities from API with filters
   async function fetchActivities() {
     try {
-      const response = await fetch("/activities");
+      let url = "/activities";
+      const params = [];
+      if (searchInput.value) {
+        params.push(`search=${encodeURIComponent(searchInput.value)}`);
+      }
+      if (sortSelect.value) {
+        params.push(`sort=${encodeURIComponent(sortSelect.value)}`);
+      }
+      if (params.length > 0) {
+        url += `?${params.join("&")}`;
+      }
+
+      const response = await fetch(url);
       const activities = await response.json();
 
-      // Clear loading message
+      // Clear loading message and dropdown
       activitiesList.innerHTML = "";
+      activitySelect.innerHTML = '<option value="">-- Select an activity --</option>';
 
       // Populate activities list
       Object.entries(activities).forEach(([name, details]) => {
@@ -154,6 +169,10 @@ document.addEventListener("DOMContentLoaded", () => {
       console.error("Error signing up:", error);
     }
   });
+
+  // Add event listeners for search and sort
+  searchInput.addEventListener("input", fetchActivities);
+  sortSelect.addEventListener("change", fetchActivities);
 
   // Initialize app
   fetchActivities();
